@@ -16,4 +16,5 @@ backwardRunRepMemData model values =
     let inputs = M.keys valueMap
     outputs <- TF.forwardRun model inputs
     let labels = zipWith (flip (foldl' (\vec (idx, groundTruth) -> vec V.// [(idx, groundTruth)]))) (M.elems valueMap) outputs
+    TF.computeGradients model inputs labels
     TF.backwardRun model inputs labels

@@ -173,7 +173,7 @@ runWorkerActions !borl !acts = do
        in (filter (not . isRewardEmpty . view futureReward) xs, drop (length xs) fs)
     addExperience replMem (RewardFutureData _ state aNr randomAction (Reward reward) stateNext episodeEnd) = do
       let (_, stateActs, stateNextActs) = mkStateActs borl state stateNext
-      liftIO $ addToReplayMemories (stateActs, aNr, randomAction, reward, stateNextActs, episodeEnd) replMem
+      liftIO $ addToReplayMemories (borl ^?! proxies.v.proxyNNConfig.nStep) (stateActs, aNr, randomAction, reward, stateNextActs, episodeEnd) replMem
     addExperience _ _ = error "Unexpected Reward in calcExperience of runWorkerActions! "
 
 -- | This function exectues all materialised rewards until a non-materialised reward is found, i.e. add a new experience

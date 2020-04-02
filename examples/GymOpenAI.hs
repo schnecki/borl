@@ -102,8 +102,9 @@ nnConfig gym maxRew =
     , _updateTargetInterval = 15000
     , _updateTargetIntervalDecay = StepWiseIncrease (Just 500) 0.1 10000
     , _trainMSEMax = Nothing -- Just 0.05
-    , _setExpSmoothParamsTo1 = False
-    , _workersMinExploration = []
+    , _setExpSmoothParamsTo1 = True -- False
+    , _workersMinExploration = [0.05, 0.10, 0.20]
+  , _nStep = Nothing
     }
   where
     (lows, highs) = observationSpaceBounds gym

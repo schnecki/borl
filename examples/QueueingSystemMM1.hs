@@ -238,6 +238,7 @@ nnConfig =
     , _trainMSEMax = Nothing    -- Just 0.05
     , _setExpSmoothParamsTo1 = True
     , _workersMinExploration = []
+  , _nStep = Nothing
     }
 
 

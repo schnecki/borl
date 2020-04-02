@@ -29,6 +29,7 @@ Ensure to *clone all submodules*:
     cd borl
     stack build --install-ghc
 
+
     # In case tensorflow-haskell/tensorflow is empty do:
     # rm -rf tensorflow-haskell
     # git clone --recursive https://github.com/schnecki/haskell.git tensorflow-haskell

@@ -219,6 +219,7 @@ nnConfig =
     , _trainMSEMax = Nothing -- Just 0.03
     , _setExpSmoothParamsTo1 = True
     , _workersMinExploration = [0.3, 0.2, 0.1]
+  , _nStep = Nothing
     }
 
 -- | BORL Parameters.

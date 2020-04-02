@@ -613,7 +613,8 @@ mkMultichainGrenade alg initialState ftExt as asFilter params decayFun net nnCon
 mkReplayMemories :: [Action s] -> NNConfig -> IO (Maybe ReplayMemories)
 mkReplayMemories as nnConfig = case nnConfig ^. replayMemoryStrategy of
   ReplayMemorySingle -> fmap ReplayMemoriesUnified <$> mkReplayMemory (nnConfig ^. replayMemoryMaxSize)
-  ReplayMemoryPerAction -> fmap ReplayMemoriesPerActions . sequence <$> replicateM (length as) (mkReplayMemory (nnConfig ^. replayMemoryMaxSize `div` length as))
+  ReplayMemoryPerAction -> fmap (`ReplayMemoriesPerActions` []) . sequence <$> replicateM (length as) (mkReplayMemory (nnConfig ^. replayMemoryMaxSize `div` length as))
+
 
 mkReplayMemory :: Int -> IO (Maybe ReplayMemory)
 mkReplayMemory sz | sz <= 1 = return Nothing

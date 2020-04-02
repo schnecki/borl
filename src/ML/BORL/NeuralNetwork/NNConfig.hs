@@ -42,11 +42,12 @@ data NNConfig = NNConfig
   , _setExpSmoothParamsTo1           :: !Bool                    -- ^ Set all exponential smoothing parameters to 1 and
                                                                  -- use ANN learning rate to decay learning solely.
   , _workersMinExploration           :: ![Float]                 -- ^ Set worker minimum exploration values.
+  , _nStep                           :: !(Maybe Int)             -- ^ Number of Steps for n-Step Q-Learning.
  }
 makeLenses ''NNConfig
 
 
 instance NFData NNConfig where
-  rnf (NNConfig rep repStrat tr lp dec pp sc stab stabDec up upDec mse param workers) =
-    rnf rep `seq` rnf repStrat `seq`
-    rnf tr `seq` rnf lp `seq` rnf dec `seq` rnf pp `seq` rnf sc `seq` rnf stab `seq` rnf stabDec `seq` rnf up `seq` rnf upDec `seq` rnf mse `seq` rnf param `seq` rnf workers
+  rnf (NNConfig rep repStrat tr lp dec pp sc stab stabDec up upDec mse param workers n) =
+    rnf rep `seq` rnf repStrat `seq` rnf tr `seq`
+    rnf lp `seq` rnf dec `seq` rnf pp `seq` rnf sc `seq` rnf stab `seq` rnf stabDec `seq` rnf up `seq` rnf upDec `seq` rnf mse `seq` rnf param `seq` rnf workers `seq` rnf n

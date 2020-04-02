@@ -95,16 +95,34 @@ fromSerialisableWith f g as aF decay ftExt builder (BORLSerialisable s workers t
   return borl'
 
 
+type ExperienceAsList = (([Float], [ActionIndex]), ActionIndex, IsRandomAction, RewardValue, ([Float], [ActionIndex]), EpisodeEnd)
+
+toExperienceAsList :: Experience -> ExperienceAsList
+toExperienceAsList ((st, as), a, rand, rew, (st', as'), epsEnd) = ((V.toList st, V.toList as), a, rand, rew, (V.toList st', V.toList as'), epsEnd)
+
+fromExperienceAsList :: ExperienceAsList -> Experience
+fromExperienceAsList ((st, as), a, rand, rew, (st', as'), epsEnd) = ((V.fromList st, V.fromList as), a, rand, rew, (V.fromList st', V.fromList as'), epsEnd)
+
 instance Serialize Proxies
-instance Serialize ReplayMemories
+instance Serialize ReplayMemories where
+  put (ReplayMemoriesUnified rm)          = put (0::Int) >> put rm
+  put (ReplayMemoriesPerActions rm cache) = put (1::Int) >> put rm >> put (map toExperienceAsList cache)
+  get = do
+    (nr :: Int) <- get
+    case nr of
+      0 -> ReplayMemoriesUnified <$> get
+      1 -> do
+        rm <- get
+        cache <- get
+        return $ ReplayMemoriesPerActions rm (map fromExperienceAsList cache)
+      _ -> error "Unexpected constructor in Serialize instace of ReplayMemories"
+
 instance (Serialize s, RewardFuture s) => Serialize (Workers s)
 
 instance Serialize NNConfig where
-  put (NNConfig memSz memStrat batchSz lp decaySetup prS scale stab stabDec upInt upIntDec trainMax param workerMinExp) =
+  put (NNConfig memSz memStrat batchSz lp decaySetup prS scale stab stabDec upInt upIntDec trainMax param workerMinExp mNStep) =
     put memSz >> put memStrat >> put batchSz >> put lp >> put decaySetup >> put (map V.toList prS) >> put scale >> put stab >> put stabDec >> put upInt >> put upIntDec >>
-    put trainMax >>
-    put param >>
-    put workerMinExp
+    put trainMax >> put param >> put workerMinExp >> put mNStep
   get = do
     memSz <- get
     memStrat <- get
@@ -120,7 +138,8 @@ instance Serialize NNConfig where
     trainMax <- get
     param <- get
     workerMinExp <- get
-    return $ NNConfig memSz memStrat batchSz lp decaySetup prS scale stab stabDec upInt upIntDec trainMax param workerMinExp
+    mNStep <- get
+    return $ NNConfig memSz memStrat batchSz lp decaySetup prS scale stab stabDec upInt upIntDec trainMax param workerMinExp mNStep
 
 
 instance Serialize Proxy where
@@ -162,12 +181,12 @@ instance Serialize ReplayMemory where
     let xs = unsafePerformIO $ mapM (VM.read vec) [0 .. maxIdx]
     put sz
     put idx
-    put $ map (\((st,as), a, rand, rew, (st',as'), epsEnd) -> ((V.toList st, V.toList as), a, rand, rew, (V.toList st', V.toList as'), epsEnd)) xs
+    put $ map toExperienceAsList xs
     put maxIdx
   get = do
     sz <- get
     idx <- get
-    (xs :: [Experience]) <- map (\((st,as), a, rand, rew, (st',as'), epsEnd) -> ((V.fromList st, V.fromList as), a, rand, rew, (V.fromList st', V.fromList as'), epsEnd)) <$> get
+    (xs :: [Experience]) <- map fromExperienceAsList <$> get
     maxIdx <- get
     return $
       unsafePerformIO $ do
